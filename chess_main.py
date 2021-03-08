@@ -33,6 +33,7 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            # Mouse Handling
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() # (x, y) position of the mouse
                 col = location[0] // SQUARE_SIZE 
@@ -47,7 +48,10 @@ def main():
                     move = chess_engine.Move(player_clicks[0], player_clicks[1], gs.board)
                     gs.make_move(move)
                     player_clicks = []
-                    print(gs.move_log[-1])
+                    print(move.get_chess_notation())
+            elif e.type ==p.KEYDOWN:
+                if e.key == p.K_z:  # 'z' is pressed
+                    gs.undo_move
 
         clock.tick(MAX_FPS)
         draw_game_state(screen, gs)
