@@ -38,6 +38,62 @@ class GameState():
             self.board[move.end_row][move.end_col] = move.piece_captured
             self.white_to_move = not self.white_to_move
 
+    def get_all_moves(self):
+        moves = []
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if (piece > 0) == self.white_to_move:
+                    # White to move
+                    if piece == 1:
+                        self.get_pawn_moves(row, col, moves)
+                    elif piece == 2:
+                        self.get_knight_moves(row, col, moves)
+                    elif piece == 3:
+                        self.get_bishop_moves(row, col, moves)
+                    elif piece == 4:
+                        self.get_rook_moves(row, col, moves)
+                    elif piece == 5:
+                        self.get_queen_moves(row, col, moves)
+                    elif piece == 6:
+                        self.get_king_moves(row, col, moves)
+                else:
+                    # Black to move
+                    if piece == -1:
+                        self.get_pawn_moves(row, col, moves)
+                    elif piece == -2:
+                        self.get_knight_moves(row, col, moves)
+                    elif piece == -3:
+                        self.get_bishop_moves(row, col, moves)
+                    elif piece == -4:
+                        self.get_rook_moves(row, col, moves)
+                    elif piece == -5:
+                        self.get_queen_moves(row, col, moves)
+                    elif piece == -6:
+                        self.get_king_moves(row, col, moves)
+        return moves
+
+    def get_pawn_moves(self, row, col, moves):
+        pass
+
+    def get_knight_moves(self, row, col, moves):
+        pass
+
+    def get_bishop_moves(self, row, col, moves):
+        pass
+
+    def get_rook_moves(self, row, col, moves):
+        pass
+
+    def get_queen_moves(self, row, col, moves):
+        pass
+
+    def get_king_moves(self, row, col, moves):
+        pass
+
+    def get_valid_moves(self):
+        return self.get_all_moves()
+
 class Move():
 
     def __init__(self, start_sq, end_sq, board):
@@ -47,6 +103,13 @@ class Move():
         self.end_col = end_sq[1]
         self.piece_moved = board[self.start_row][self.start_col]
         self.piece_captured = board[self.end_row][self.end_col]
+        self.move_ID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
+        # print(self.move_ID)
+
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return self.move_ID == other.move_ID
+        return False
 
     def get_chess_notation(self):
         piece_moved_as_str = LUT[int(self.piece_moved)]
@@ -60,4 +123,5 @@ if __name__ == "__main__":
     gs = GameState()
     move = Move((0,0), (4,4), gs.board)
     gs.make_move(move)
+    gs.get_valid_moves()
     exit()
