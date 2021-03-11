@@ -121,7 +121,96 @@ class GameState():
         pass
 
     def get_rook_moves(self, row, col, moves):
-        pass
+
+        # White Rook's
+        if self.white_to_move and self.board[row][col] > 0:
+            for i in range(row+1, 8):
+                # move up
+                newSq = self.board[i][col]
+                if newSq == 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif newSq < 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif newSq > 0:
+                    break
+            for j in range(0, row):
+                # move down
+                i = row - (j + 1)
+                newSq = self.board[i][col]
+                if newSq == 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif newSq < 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif newSq > 0:
+                    break
+            for i in range(col+1, 8):
+                # move right
+                newSq = self.board[row][i]
+                if newSq == 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif newSq < 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif newSq > 0:
+                    break
+            for j in range(0, col):
+                # move left
+                i = col - (j + 1)
+                newSq = self.board[row][i]
+                if newSq == 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif newSq < 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif newSq > 0:
+                    break
+        
+        # Black Rook's
+        if not self.white_to_move and self.board[row][col] < 0:
+            for i in range(row+1, 8):
+                # move up
+                newSq = self.board[i][col]
+                if newSq == 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif newSq > 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif newSq < 0:
+                    break
+            for j in range(0, row):
+                # move down
+                i = row - (j + 1)
+                newSq = self.board[i][col]
+                if newSq == 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif newSq > 0:
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif newSq < 0:
+                    break
+            for i in range(col+1, 8):
+                # move right
+                newSq = self.board[row][i]
+                if newSq == 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif newSq > 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif newSq < 0:
+                    break
+            for j in range(0, col):
+                # move left
+                i = col - (j + 1)
+                newSq = self.board[row][i]
+                if newSq == 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif newSq > 0:
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif newSq < 0:
+                    break            
 
     def get_queen_moves(self, row, col, moves):
         pass
