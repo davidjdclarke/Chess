@@ -43,7 +43,7 @@ class GameState():
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
-                if (piece > 0) == self.white_to_move:
+                if (piece > 0) and self.white_to_move:
                     # White to move
                     if piece == 1:
                         self.get_pawn_moves(row, col, moves)
@@ -57,7 +57,7 @@ class GameState():
                         self.get_queen_moves(row, col, moves)
                     elif piece == 6:
                         self.get_king_moves(row, col, moves)
-                else:
+                elif (piece < 0) and not self.white_to_move:
                     # Black to move
                     if piece == -1:
                         self.get_pawn_moves(row, col, moves)
@@ -74,10 +74,48 @@ class GameState():
         return moves
 
     def get_pawn_moves(self, row, col, moves):
-        pass
+        start_sq = (row, col)
+        # White
+        if self.white_to_move:
+            if self.board[row+1][col] == 0:
+                moves.append(Move((row, col), (row+1, col), self.board))
+                if row < 7:
+                    if self.board[row+1][col] == 0 and row == 1:
+                        moves.append(Move((row, col), (row+2, col), self.board))
+            if col < 7:
+                if self.board[row+1][col+1] < 0:
+                    moves.append(Move((row, col), (row+1, col+1), self.board))
+            if col > 0:
+                if self.board[row+1][col-1] < 0:
+                    moves.append(Move((row, col), (row+1, col-1), self.board))
+
+        # Black
+        elif not self.white_to_move:
+            if self.board[row-1][col] == 0:
+                moves.append(Move((row, col), (row-1, col), self.board))
+                if row > 1: 
+                    if self.board[row-2][col] == 0 and row == 6:
+                        moves.append(Move((row, col), (row-2, col), self.board))
+            if col < 7:
+                if self.board[row-1][col+1] > 0:
+                    moves.append(Move((row, col), (row-1, col+1), self.board))
+            if col > 0:
+                if self.board[row-1][col-1] > 0:
+                    moves.append(Move((row, col), (row-1, col-1), self.board))
 
     def get_knight_moves(self, row, col, moves):
-        pass
+        knightMoves = [(row+2, col+1), (row+2, col-1), (row-2, col+1), (row-2, col-1), (row+1, col+2), (row-1, col+2), (row+1, col-2), (row-1, col-2)]
+        if self.white_to_move and self.board[row][col] > 0:
+            for move in knightMoves:
+                if (0 <= move[0] <= 7) and (0 <= move[1] <= 7):
+                    if self.board[move[0]][move[1]] <= 0:
+                        moves.append(Move((row, col), move, self.board))
+        elif not self.white_to_move and self.board[row][col] < 0:
+            for move in knightMoves:
+                if (0 <= move[0] <= 7) and (0 <= move[1] <= 7):
+                    if self.board[move[0]][move[1]] >= 0:
+                        moves.append(Move((row, col), move, self.board))
+
 
     def get_bishop_moves(self, row, col, moves):
         pass
