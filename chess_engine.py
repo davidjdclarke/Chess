@@ -315,10 +315,15 @@ class GameState():
         self.get_bishop_moves(row, col, moves)
 
     def get_king_moves(self, row, col, moves):
-        pass
+        newMoves = [(row-1, col-1), (row-1, col), (row-1, col+1), (row, col-1), (row, col+1), (row+1, col-1), (row+1, col), (row+1, col+1)]
+        for move in newMoves:
+            if (0 <= move[0] < 8) and (0 <= move[1] < 8):
+                if (self.white_to_move and self.board[move[0]][move[1]] <= 0) or (not self.white_to_move and self.board[move[0]][move[1]] >= 0):
+                    moves.append(Move((row, col), move, self.board))
 
     def get_valid_moves(self):
         return self.get_all_moves()
+
 
 class Move():
 
