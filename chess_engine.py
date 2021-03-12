@@ -118,7 +118,108 @@ class GameState():
 
 
     def get_bishop_moves(self, row, col, moves):
-        pass
+        d1 = row + 1
+        d2 = col + 1
+        d3 = 8 - row
+        d4 = 8 - col
+        if self.white_to_move and self.board[row][col] > 0:
+            for i in range(1, min(d3, d4)):
+                newRow = row + i
+                newCol = col + i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] < 0:
+                    moves.append(Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] > 0:
+                    break
+            for i in range(1, min(d1, d2)):
+                newRow = row - i
+                newCol = col - i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] < 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] > 0:
+                    break
+            for i in range(1, min(d2, d3)):
+                newRow = row + i
+                newCol = col - i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] < 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] > 0:
+                    break
+            for i in range(1, min(d1, d4)):
+                newRow = row - i
+                newCol = col + i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] < 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] > 0:
+                    break
+        
+        if not self.white_to_move and self.board[row][col] < 0:
+            for i in range(1, min(d3, d4)):
+                newRow = row + i
+                newCol = col + i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] > 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] < 0:
+                    break
+            for i in range(1, min(d1, d2)):
+                newRow = row - i
+                newCol = col - i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] > 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] < 0:
+                    break
+            for i in range(1, min(d2, d3)):
+                newRow = row + i
+                newCol = col - i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] > 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] < 0:
+                    break
+            for i in range(1, min(d1, d4)):
+                newRow = row - i
+                newCol = col + i
+                if self.board[newRow][newCol] == 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                elif self.board[newRow][newCol] > 0:
+                    moves.append(
+                        Move((row, col), (newRow, newCol), self.board))
+                    break
+                if self.board[newRow][newCol] < 0:
+                    break
+             
 
     def get_rook_moves(self, row, col, moves):
 
