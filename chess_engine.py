@@ -220,7 +220,6 @@ class GameState():
                     break
              
     def get_rook_moves(self, row, col, moves):
-
         # White Rook's
         if self.white_to_move and self.board[row][col] > 0:
             for i in range(row+1, 8):
