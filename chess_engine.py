@@ -116,7 +116,6 @@ class GameState():
                     if self.board[move[0]][move[1]] >= 0:
                         moves.append(Move((row, col), move, self.board))
 
-
     def get_bishop_moves(self, row, col, moves):
         d1 = row + 1
         d2 = col + 1
@@ -220,7 +219,6 @@ class GameState():
                 if self.board[newRow][newCol] < 0:
                     break
              
-
     def get_rook_moves(self, row, col, moves):
 
         # White Rook's
@@ -314,7 +312,8 @@ class GameState():
                     break            
 
     def get_queen_moves(self, row, col, moves):
-        pass
+        self.get_rook_moves(row, col, moves)
+        self.get_bishop_moves(row, col, moves)
 
     def get_king_moves(self, row, col, moves):
         pass
