@@ -29,6 +29,8 @@ class GameState():
         self.black_king_location = (7, 3)
         self.pins = ()
         self.checks = []
+        self.winner = None
+        self.game_over = False
 
     def make_move(self, move):
         self.board[move.start_row][move.start_col] = 0
@@ -278,6 +280,20 @@ class GameState():
                 self.get_king_moves(king_row, king_col, moves)
         else:  # not in check
             moves = self.get_all_moves()
+        if len(moves) == 0:
+            if self.isCheck:
+                self.game_over = True
+                if self.white_to_move:
+                    self.winner = "Black"
+                    print("Game Over: Black Wins!")
+                else:
+                    self.winner = "White"
+                    print("Game Over: White Wins!")
+            else:
+                self.game_over = True
+                self.winner = "Draw"
+                print("Game Over: Draw")
+                    
         return moves
 
     def check_for_pins_and_checks(self):
