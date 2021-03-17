@@ -49,15 +49,18 @@ def main():
                     player_clicks.append(sq_selected)
                 if len(player_clicks) == 2:
                     move = chess_engine.Move(player_clicks[0], player_clicks[1], gs.board)
-                    if move in valid_moves:
-                        gs.make_move(move)
-                        print(move.get_chess_notation())
-                        move_made = True
-                    player_clicks = []      
+                    for i in range(len(valid_moves)):
+                        if move == valid_moves[i]:
+                            gs.make_move(move)
+                            print(move.get_chess_notation())
+                            move_made = True
+                        player_clicks = []
+                    if not move_made:
+                        player_clicks = [sq_selected]       
             elif e.type ==p.KEYDOWN:
                 if e.key == p.K_z:  # 'z' is pressed
-                    gs.undo_move
-                    move_made = True
+                    gs.undo_move()
+                    move_made = False
 
         if move_made:
             animate_move(gs.move_log[-1], screen, gs, clock)
