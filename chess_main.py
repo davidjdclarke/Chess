@@ -51,6 +51,23 @@ def main():
                     move = chess_engine.Move(player_clicks[0], player_clicks[1], gs.board)
                     for i in range(len(valid_moves)):
                         if move == valid_moves[i]:
+                            if move.is_pawn_promotion:
+                                choice_made = False
+                                while (not choice_made):
+                                    for m in p.event.get():
+                                        if m.type == p.KEYDOWN:
+                                            if m.key == p.K_q:
+                                                move.set_promotion_choice('q')
+                                                choice_made = True
+                                            elif m.key == p.K_r:
+                                                move.set_promotion_choice('r')
+                                                choice_made = True
+                                            elif m.key == p.K_b:
+                                                move.set_promotion_choice('b')
+                                                choice_made = True
+                                            elif m.key == p.K_n:
+                                                move.set_promotion_choice('n')
+                                                choice_made = True
                             gs.make_move(move)
                             print(move.get_chess_notation())
                             move_made = True
@@ -61,6 +78,7 @@ def main():
                 if e.key == p.K_z:  # 'z' is pressed
                     gs.undo_move()
                     move_made = False
+                    valid_moves = gs.get_valid_moves()
 
         if move_made:
             animate_move(gs.move_log[-1], screen, gs, clock)

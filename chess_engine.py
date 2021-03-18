@@ -32,9 +32,11 @@ class GameState():
         self.winner = None
         self.game_over = False
 
-    def make_move(self, move):
+    def make_move(self, move, promotion=None):
         self.board[move.start_row][move.start_col] = 0
         self.board[move.end_row][move.end_col] = move.piece_moved
+        if move.is_pawn_promotion:
+            self.board[move.end_row][move.end_col] = move.promotion_choice
         if move.piece_moved == 6:
             self.white_king_location = (move.end_row, move.end_col)
         elif move.piece_moved == -6:
@@ -48,18 +50,6 @@ class GameState():
             self.board[move.start_row][move.start_col] = move.piece_moved
             self.board[move.end_row][move.end_col] = move.piece_captured
             self.white_to_move = not self.white_to_move
-
-    def get_piece_location(self, piece):
-        """
-        Returns (as a tuple) the posistion of the piece passed as an argument.
-        Primarliy used to locate the positions of the white and black king.
-        piece = 6
-        returns --> (0, 3)
-        """
-        for i in range(8):
-            for j in range(8):
-                if self.board[i][j] == piece:
-                    return (i, j)
 
     def get_all_moves(self):
         moves = []
@@ -381,6 +371,10 @@ class Move():
         self.end_col = end_sq[1]
         self.piece_moved = board[self.start_row][self.start_col]
         self.piece_captured = board[self.end_row][self.end_col]
+        self.is_pawn_promotion = False
+        self.promotion_choice = None
+        if (self.piece_moved == 1 and self.end_row == 7) or (self.piece_moved == -1 and self.end_row == 0):
+            self.is_pawn_promotion = True
         self.move_ID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
         # print(self.move_ID)
 
@@ -396,6 +390,11 @@ class Move():
         
         move_str = "(" + piece_moved_as_str + ") " + start_sq_as_str + "x" + end_sq_as_str
         return str(move_str) 
+
+    def set_promotion_choice(self, choice):
+        pieces = {'q': 5, 'r': 4, 'b': 3, 'n': 2}
+        f = 1 if self.piece_moved > 0 else (-1)
+        self.promotion_choice = pieces[choice] * f
 
 if __name__ == "__main__":
     gs = GameState()
