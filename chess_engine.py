@@ -26,11 +26,17 @@ class GameState():
         self.move_log = []
         self.isCheck = False
         self.white_king_location = (0, 3)
+        self.whiteKingHasMoved = False
         self.black_king_location = (7, 3)
+        self.blackKingHasMoved = False
         self.pins = ()
         self.checks = []
         self.winner = None
         self.game_over = False
+        self.whiteCastleQueensSide = True
+        self.whiteCastleKingSide = True
+        self.blackCastleQueenSide = True
+        self.blackCastleKingSide = True
 
     def make_move(self, move, promotion=None):
         self.board[move.start_row][move.start_col] = 0
@@ -39,8 +45,10 @@ class GameState():
             self.board[move.end_row][move.end_col] = move.promotion_choice
         if move.piece_moved == 6:
             self.white_king_location = (move.end_row, move.end_col)
+            self.whiteKingHasMoved = True
         elif move.piece_moved == -6:
             self.black_king_location = (move.end_row, move.end_col)
+            self.blackKingHasMoved = False
         self.move_log.append(move)
         self.white_to_move = not self.white_to_move
 
@@ -101,8 +109,8 @@ class GameState():
             if self.board[row+1][col] == 0:
                 if not piece_pinned or pin_direction == (1, 0):
                     moves.append(Move((row, col), (row+1, col), self.board))
-                    if row < 7:
-                        if self.board[row+2][col] == 0 and row == 1:
+                    if row == 1:
+                        if self.board[row+2][col] == 0:
                             moves.append(Move((row, col), (row+2, col), self.board))
             if col < 7:
                 if self.board[row+1][col+1] < 0:
@@ -118,8 +126,8 @@ class GameState():
             if self.board[row-1][col] == 0:
                 if not piece_pinned or pin_direction == (-1, 0):
                     moves.append(Move((row, col), (row-1, col), self.board))
-                    if row > 1: 
-                        if self.board[row-2][col] == 0 and row == 6:
+                    if row == 6:
+                        if self.board[row-2][col] == 0:
                             moves.append(Move((row, col), (row-2, col), self.board))
             if col < 7:
                 if self.board[row-1][col+1] > 0:
@@ -221,9 +229,10 @@ class GameState():
                         temp = self.white_king_location
                         self.white_king_location = (move[0], move[1])
                         isCheck, checks, pins = self.check_for_pins_and_checks()
+                        self.white_king_location = temp
                         if not isCheck:
                             moves.append(Move((row, col), (move[0], move[1]), self.board))
-                        self.white_king_location = temp
+                        
         else:
             for move in newMoves:
                 if (0 <= move[0] < 8) and (0 <= move[1] < 8):
@@ -231,9 +240,9 @@ class GameState():
                         temp = self.black_king_location
                         self.black_king_location = (move[0], move[1])
                         isCheck, checks, pins = self.check_for_pins_and_checks()
-                        if not isCheck:
-                            moves.append(Move((row, col), (move[0], move[1]), self.board))
                         self.black_king_location = temp
+                        if not isCheck:
+                            moves.append(Move((row, col), (move[0], move[1]), self.board))                       
 
     def get_valid_moves(self):
         moves = []
@@ -265,7 +274,8 @@ class GameState():
                 for i in range(len(moves) - 1, -1, -1):
                     if moves[i].piece_moved != abs(6): # Must block or capture
                         if not (moves[i].end_row, moves[i].end_col) in valid_squares:
-                            moves.remove(moves[i])
+                            if abs(moves[i].piece_moved) != 6: # King can still move out of check!
+                                moves.remove(moves[i])
             else:  # Double check, must move the king
                 self.get_king_moves(king_row, king_col, moves)
         else:  # not in check
@@ -315,7 +325,7 @@ class GameState():
                             break
                     elif (end_piece * f) < 0:
                         """
-                        This is a little tricky, in this case we have found an enemy piece with a potential attack in the King.
+                        This is a little tricky, in this case we have found an enemy piece with a potential attack on the King.
                         There are multiple cases that can occur, they depend on what type of piece is attacking.
                         Cases:
                         1.  Pawn
@@ -327,11 +337,12 @@ class GameState():
                         if abs(end_piece) == 1 and i == 1:
                             if f == -1:  # Black to move
                                 if j in [4, 5]:
-                                    isCheck == True
+                                    isCheck = True
                                     checks.append((end_row, end_col, d[0], d[1]))
-                            elif j in [6, 7]:  # White to move
-                                isCheck == True
-                                checks.append((end_row, end_col, d[0], d[1]))
+                            else: 
+                                if j in [6, 7]:  # White to move
+                                    isCheck = True
+                                    checks.append((end_row, end_col, d[0], d[1]))
                         #  Bishop and Queen (pt. 1)
                         elif abs(end_piece) in [3, 5] and j in [4, 5, 6, 7]:
                             if posible_pin == ():
@@ -376,7 +387,7 @@ class Move():
         if (self.piece_moved == 1 and self.end_row == 7) or (self.piece_moved == -1 and self.end_row == 0):
             self.is_pawn_promotion = True
         self.move_ID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
-        # print(self.move_ID)
+
 
     def __eq__(self, other):
         if isinstance(other, Move):
