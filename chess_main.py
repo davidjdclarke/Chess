@@ -68,7 +68,7 @@ def main():
                                             elif m.key == p.K_n:
                                                 move.set_promotion_choice('n')
                                                 choice_made = True
-                            gs.make_move(move)
+                            gs.make_move(valid_moves[i])
                             print(move.get_chess_notation())
                             move_made = True
                         player_clicks = []
