@@ -49,7 +49,11 @@ class GameState():
         elif move.piece_moved == -6:
             self.black_king_location = (move.end_row, move.end_col)
             self.blackKingHasMoved = False
-        self.move_log.append(move)
+
+        # Enpassant
+        if move.isEnpassant:
+            lastMove = self.move_log[-1]
+            self.board[lastMove.end_row][lastMove.end_col] = 0
 
         # Castle Move
         if move.isCastle:
@@ -63,6 +67,7 @@ class GameState():
 
         # update castling rights - whenever it is a rook or king move
         self.updateCastleRights(move)
+        self.move_log.append(move)
         self.white_to_move = not self.white_to_move
 
     def undo_move(self):
@@ -168,6 +173,12 @@ class GameState():
                 if self.board[row+1][col-1] < 0:
                     if not piece_pinned or pin_direction == (1, -1):
                         moves.append(Move((row, col), (row+1, col-1), self.board))
+            if len(self.move_log) > 0:
+                lastMove = self.move_log[-1]
+                if lastMove.enpassantPossible and (row, col) in lastMove.enpassantSquares:
+                    if self.board[row+1][lastMove.end_col] == 0:
+                        move = Move((row, col), (row+1, lastMove.end_col), self.board, isEnpassant=True)
+                        moves.append(move)
 
         # Black
         elif not self.white_to_move:
@@ -185,6 +196,13 @@ class GameState():
                 if self.board[row-1][col-1] > 0:
                     if not piece_pinned or pin_direction == (-1, -1):
                         moves.append(Move((row, col), (row-1, col-1), self.board))
+            if len(self.move_log) > 0:
+                lastMove = self.move_log[-1]
+                if lastMove.enpassantPossible and (row, col) in lastMove.enpassantSquares:
+                    if self.board[row-1][lastMove.end_col] == 0:
+                        move = Move((row, col), (row-1, lastMove.end_col),
+                                    self.board, isEnpassant=True)
+                        moves.append(move)
 
     def get_knight_moves(self, row, col, moves):
         knightMoves = [(row+2, col+1), (row+2, col-1), (row-2, col+1), (row-2, col-1), (row+1, col+2), (row-1, col+2), (row+1, col-2), (row-1, col-2)]
@@ -364,7 +382,12 @@ class GameState():
                 self.game_over = True
                 self.winner = "Draw"
                 print("Game Over: Draw")
-                    
+        
+        if len(moves) == 0:
+            if self.isCheck:
+                self.checkMate = True
+            else:
+                self.staleMate = True
         return moves
 
     def inCheck(self):
@@ -399,7 +422,6 @@ class GameState():
             self.black_king_location = kingSquare
         return check
         
-
     def check_for_pins_and_checks(self):
         pins = []
         checks = []
@@ -484,19 +506,32 @@ class CastleRights():
         self.bqs = bqs
 
 class Move():
-
-    def __init__(self, start_sq, end_sq, board, isCastle=False):
+    def __init__(self, start_sq, end_sq, board, isEnpassant=False, isCastle=False):
         self.start_row = start_sq[0]
         self.start_col = start_sq[1]
         self.end_row = end_sq[0]
         self.end_col = end_sq[1]
+        self.board = board
         self.piece_moved = board[self.start_row][self.start_col]
         self.piece_captured = board[self.end_row][self.end_col]
         self.is_pawn_promotion = False
         self.promotion_choice = None
         self.isCastle = isCastle
+        self.isEnpassant = isEnpassant
+        self.enpassantPossible = False
+        self.enpassantSquares = []
         if (self.piece_moved == 1 and self.end_row == 7) or (self.piece_moved == -1 and self.end_row == 0):
             self.is_pawn_promotion = True
+
+        # Checks if enpassant
+        if abs(self.piece_moved) == 1 and abs(self.start_row - self.end_row) == 2:
+            f = 1 if self.piece_moved > 0 else (-1)
+            for i in [-1, 1]:
+                col = self.end_col + i
+                if 0 <= col < 8:
+                    if self.board[self.end_row][col] == -1 * f:
+                        self.enpassantPossible = True
+                        self.enpassantSquares.append((self.end_row, col))
         self.move_ID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
         self.message = None
 
