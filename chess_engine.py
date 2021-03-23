@@ -78,7 +78,17 @@ class GameState():
             self.currentCastlingRight = self.castleRightsLog[-1]
  
     def updateCastleRights(self, move):
+        squares = [(0, 0), (0, 7), (7, 0), (7, 7)]
         piece = move.piece_moved
+        endSquare = (move.end_row, move.end_col)
+        if endSquare == squares[0]:
+            self.currentCastlingRight.wks = False
+        elif endSquare == squares[1]:
+            self.currentCastlingRight.wqs = False
+        elif endSquare == squares[2]:
+            self.currentCastlingRight.bks = False
+        elif endSquare == squares[3]:
+            self.currentCastlingRight.bqs = False
         if piece == 6:
             self.currentCastlingRight.wks = False
             self.currentCastlingRight.wqs = False
