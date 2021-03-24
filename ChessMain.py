@@ -1,5 +1,6 @@
 import pygame as p
 import ChessEngine
+import ChessAI
 
 
 p.init()
@@ -11,6 +12,7 @@ LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
 INVERSION = [7, 6, 5, 4, 3, 2, 1, 0]
 MAX_FPS = 60
 IMAGES = {}
+isPlayerWhite = False
 
 
 def load_images(board):
@@ -22,10 +24,16 @@ def load_images(board):
 
 
 def main():
+    if isPlayerWhite:
+        isPlayerTurn = True
+    else:
+        isPlayerTurn = False
+
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
+    ai = ChessAI.ComputerPlayer()
     validMoves = gs.getValidMoves()
     moveMade = False
 
@@ -36,56 +44,65 @@ def main():
 
     while running:
         for e in p.event.get():
-            if e.type == p.QUIT:
-                running = False
-            # Mouse Handling
-            elif e.type == p.MOUSEBUTTONDOWN:
-                location = p.mouse.get_pos()  # (x, y) position of the mouse
-                col = location[0] // SQUARE_SIZE
-                row = location[1] // SQUARE_SIZE
-                if playerIsWhite:
-                    r, c = invertBoardSquare(row, col)
-                else:
-                    r, c = row, col
-                if squareSelected == (row, col):  # clicked the same square twice
-                    squareSelected = ()
-                    playerClicks = []
-                else:
-                    squareSelected = (r, c)
-                    playerClicks.append(squareSelected)
-                if len(playerClicks) == 2:
-                    move = ChessEngine.Move(
-                        playerClicks[0], playerClicks[1], gs.board)
-                    for i in range(len(validMoves)):
-                        if move == validMoves[i]:
-                            if move.isPawnPromotion:
-                                choiceMade = False
-                                while (not choiceMade):
-                                    for m in p.event.get():
-                                        if m.type == p.KEYDOWN:
-                                            if m.key == p.K_q:
-                                                validMoves[i].setPromotionChoice('q')
-                                                choiceMade = True
-                                            elif m.key == p.K_r:
-                                                validMoves[i].setPromotionChoice('r')
-                                                choiceMade = True
-                                            elif m.key == p.K_b:
-                                                validMoves[i].setPromotionChoice('b')
-                                                choiceMade = True
-                                            elif m.key == p.K_n:
-                                                validMoves[i].setPromotionChoice('n')
-                                                choiceMade = True
-                            gs.makeMove(validMoves[i])
-                            print(move.getChessNotation())
-                            moveMade = True
+            if not isPlayerTurn:
+                # AI Turn
+                move = ai.pickRandomMove(gs)
+                gs.makeMove(move)
+                print(move.getChessNotation())
+                moveMade = True
+                isPlayerTurn = True
+            elif isPlayerTurn:
+                if e.type == p.QUIT:
+                    running = False
+                # Mouse Handling
+                elif e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()  # (x, y) position of the mouse
+                    col = location[0] // SQUARE_SIZE
+                    row = location[1] // SQUARE_SIZE
+                    if isPlayerWhite:
+                        r, c = invertBoardSquare(row, col)
+                    else:
+                        r, c = row, col
+                    if squareSelected == (row, col):  # clicked the same square twice
+                        squareSelected = ()
                         playerClicks = []
-                    if not moveMade:
-                        playerClicks = [squareSelected]
-            elif e.type == p.KEYDOWN:
-                if e.key == p.K_z:  # 'z' is pressed
-                    gs.undoMove()
-                    moveMade = False
-                    validMoves = gs.getValidMoves()
+                    else:
+                        squareSelected = (r, c)
+                        playerClicks.append(squareSelected)
+                    if len(playerClicks) == 2:
+                        move = ChessEngine.Move(
+                            playerClicks[0], playerClicks[1], gs.board)
+                        for i in range(len(validMoves)):
+                            if move == validMoves[i]:
+                                if move.isPawnPromotion:
+                                    choiceMade = False
+                                    while (not choiceMade):
+                                        for m in p.event.get():
+                                            if m.type == p.KEYDOWN:
+                                                if m.key == p.K_q:
+                                                    validMoves[i].setPromotionChoice('q')
+                                                    choiceMade = True
+                                                elif m.key == p.K_r:
+                                                    validMoves[i].setPromotionChoice('r')
+                                                    choiceMade = True
+                                                elif m.key == p.K_b:
+                                                    validMoves[i].setPromotionChoice('b')
+                                                    choiceMade = True
+                                                elif m.key == p.K_n:
+                                                    validMoves[i].setPromotionChoice('n')
+                                                    choiceMade = True
+                                gs.makeMove(validMoves[i])
+                                print(move.getChessNotation())
+                                moveMade = True
+                                isPlayerTurn = False
+                            playerClicks = []
+                        if not moveMade:
+                            playerClicks = [squareSelected]
+                elif e.type == p.KEYDOWN:
+                    if e.key == p.K_z:  # 'z' is pressed
+                        gs.undoMove()
+                        moveMade = False
+                        validMoves = gs.getValidMoves()
 
         if moveMade:
             animateMove(gs.moveLog[-1], screen, gs, clock)
@@ -95,6 +112,8 @@ def main():
         clock.tick(MAX_FPS)
         drawGameState(screen, gs, validMoves, squareSelected)
         p.display.flip()
+        if gs.gameOver:
+            return 0
 
 
 def invertBoardSquare(row, col):
@@ -112,7 +131,7 @@ def highlightSquares(screen, gs, validMoves, squareSelected):
             s = p.Surface((SQUARE_SIZE, SQUARE_SIZE))
             s.set_alpha(100)  # transparency from 0 to 255
             s.fill(p.Color('blue'))
-            if playerIsWhite:
+            if isPlayerWhite:
                 r, c = invertBoardSquare(row, col)
             else:
                 r, c = row, col
@@ -120,7 +139,7 @@ def highlightSquares(screen, gs, validMoves, squareSelected):
             s.fill(p.Color('yellow'))
             for move in validMoves:
                 if move.startRow == row and move.startCol == col:
-                    if playerIsWhite:
+                    if isPlayerWhite:
                         r, c = invertBoardSquare(move.endRow, move.endCol)
                     else:
                         r, c = move.endRow, move.endCol
@@ -136,7 +155,7 @@ def drawGameState(screen, gs, validMoves, squareSelected):
 
 def drawBoard(screen):
     """
-    This function draws out the squares of the game board.  
+    This function draws out the squares of the game board.
     The colors are selcted from pygames Color Class as white and gray by defualt, but they can be changed to any color the user desires.
     """
     global colors
@@ -152,7 +171,7 @@ def drawPieces(screen, gs):
     for i in range(DIMENSION):
         for j in range(DIMENSION):
             piece = LUT[int(gs.board[i][j])]
-            if playerIsWhite:
+            if isPlayerWhite:
                 r, c = invertBoardSquare(i, j)
             else:
                 r, c = i, j
@@ -164,7 +183,7 @@ def drawPieces(screen, gs):
 def animateMove(move, screen, gs, clock):
     global colors
     coord = []  # list of locations to move through
-    if playerIsWhite:
+    if isPlayerWhite:
         startRow, startCol = invertBoardSquare(move.startRow, move.startCol)
         endRow, endCol = invertBoardSquare(move.endRow, move.endCol)
     else:
@@ -193,5 +212,8 @@ def animateMove(move, screen, gs, clock):
 
 
 if __name__ == "__main__":
-    playerIsWhite = False
+    if isPlayerWhite:
+        isPlayerTurn = True
+    else:
+        isPlayerTurn = False
     main()
