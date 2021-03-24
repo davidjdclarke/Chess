@@ -1,5 +1,5 @@
 import pygame as p
-import ChessMain
+import ChessEngine
 
 
 p.init()
@@ -24,7 +24,7 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = chess_engine.GameState()
+    gs = ChessEngine.GameState()
     validMoves = gs.getValidMoves()
     moveMade = False
 
@@ -49,7 +49,7 @@ def main():
                     squareSelected = (row, col)
                     playerClicks.append(squareSelected)
                 if len(playerClicks) == 2:
-                    move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     for i in range(len(validMoves)):
                         if move == validMoves[i]:
                             if move.isPawnPromotion:

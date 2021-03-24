@@ -1,5 +1,5 @@
 # Welcome
-This project the merger between two passions of mine, Programming and the Game of Chess!
+This project the merger between two passions of mine, Programming and the Chess!
 
 This project contains two files as of now, the of these is ChessMain.py.  This file uses the pygame libary to provide a graphical user interface for the user to interact with the pieces and play The Game of Chess.  The second, and more intersting file is the Chess Enigine (ChessEngine.py).  The Chess Engine is responsible for handling all logic related to the determining of moves, managing the game state and will be the main interactive program to go along side the addition of any decision making algorithms that I plan to add in the future.
 
