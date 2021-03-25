@@ -418,6 +418,57 @@ class GameState():
             self.blackKingLocation = kingSquare
         return check
 
+    def getDefenders(self, row, col):
+        """
+        Returns a list of all pieces with an attack on the position row, col.
+        """
+        self.whiteToMove = not self.whiteToMove
+        attacks = []
+        directions = [(-1, 0), (0, -1), (1, 0), (0, 1),
+                      (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        knightMoves = [(row+2, col+1), (row+2, col-1), (row-2, col+1), (row-2, col-1),
+                       (row+1, col+2), (row-1, col+2), (row+1, col-2), (row-1, col-2)]
+        f = 1 if self.whiteToMove else (-1)
+        for j in range(len(directions)):
+            d = directions[j]
+            for i in range(1, 8):
+                r = row + i * d[0]
+                c = col + i * d[1]
+                if 0 <= r < 8 and 0 <= c < 8:
+                    piece = self.board[r][c]
+                    if piece * f > 0:  # if enemy piece
+                        if j in [4, 5, 6, 7]: # diagonal move
+                            if abs(piece) in [3, 5] or (abs(piece) == 6 and i == 1):
+                                attacks.append(abs(piece))
+                                if (abs(piece)) == 6:
+                                    break
+                            elif abs(piece) in [2, 4]:
+                                break
+                            elif abs(piece) == 1:
+                                if i == 1 and d[0] == -f:
+                                    attacks.append(abs(piece))
+                                else:
+                                    break
+                        if j in [0, 1, 2, 3]:  # vertical/straight move
+                            if abs(piece) in [4, 5] or (abs(piece) == 6 and i == 1):
+                                attacks.append(abs(piece))
+                                if (abs(piece)) == 6:
+                                    break
+                            elif abs(piece) in [1, 2, 3]:
+                                break
+                else:
+                    break
+        for j in range(len(knightMoves)):
+            r = knightMoves[j][0]
+            c = knightMoves[j][1]
+            if 0 <= r < 8 and 0 <= c < 8:
+                if self.board[r][c] * f == 2:
+                    attacks.append(2)
+        self.whiteToMove = not self.whiteToMove
+        return attacks
+                            
+            
+
     def checkForPinsAndChecks(self):
         pins = []
         checks = []
