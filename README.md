@@ -23,7 +23,7 @@ The next step is to create a virtual enviorment for python to run within.  The p
 
 ##### Create the virtual enviorment:
 ```
-$ pyhton3 -m venv chess-venv
+$ python3 -m venv chess-venv
 ```
 
 ##### Activate the Enviorment:
