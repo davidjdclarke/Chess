@@ -33,7 +33,7 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
-    ai = ChessAI.ComputerPlayer()
+    ai = ChessAI.ComputerPlayer(gs, not isPlayerWhite)
     validMoves = gs.getValidMoves()
     moveMade = False
 
@@ -46,7 +46,7 @@ def main():
         for e in p.event.get():
             if not isPlayerTurn:
                 # AI Turn
-                move = ai.pickRandomMove(gs)
+                move = ai.makeMove(gs)
                 gs.makeMove(move)
                 print(move.getChessNotation())
                 moveMade = True
@@ -200,11 +200,11 @@ def animateMove(move, screen, gs, clock):
         drawBoard(screen)
         drawPieces(screen, gs)
         color = colors[(endRow + endCol) % 2]
-        end_square = p.Rect(endCol*SQUARE_SIZE,
+        endSquareuare = p.Rect(endCol*SQUARE_SIZE,
                             endRow*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
-        p.draw.rect(screen, color, end_square)
-        if move.piece_captured != 0:
-            screen.blit(IMAGES[LUT[move.piece_captured]], end_square)
+        p.draw.rect(screen, color, endSquareuare)
+        if move.pieceCaptured != 0:
+            screen.blit(IMAGES[LUT[move.pieceCaptured]], endSquareuare)
         screen.blit(IMAGES[LUT[move.pieceMoved]], p.Rect(
             c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         p.display.flip()

@@ -74,7 +74,7 @@ class GameState():
         if len(self.moveLog) != 0:
             move = self.moveLog.pop()
             self.board[move.startRow][move.startCol] = move.pieceMoved
-            self.board[move.endRow][move.endCol] = move.piece_captured
+            self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
 
             # undo castling rights
@@ -502,14 +502,14 @@ class CastleRights():
         self.bqs = bqs
 
 class Move():
-    def __init__(self, startSquare, end_sq, board, isEnpassant=False, isCastle=False):
+    def __init__(self, startSquare, endSquare, board, isEnpassant=False, isCastle=False):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
-        self.endRow = end_sq[0]
-        self.endCol = end_sq[1]
+        self.endRow = endSquare[0]
+        self.endCol = endSquare[1]
         self.board = board
         self.pieceMoved = board[self.startRow][self.startCol]
-        self.piece_captured = board[self.endRow][self.endCol]
+        self.pieceCaptured = board[self.endRow][self.endCol]
         self.isPawnPromotion = False
         self.promotionChoice = None
         self.isCastle = isCastle
