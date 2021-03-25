@@ -12,7 +12,8 @@ LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
 INVERSION = [7, 6, 5, 4, 3, 2, 1, 0]
 MAX_FPS = 60
 IMAGES = {}
-isPlayerWhite = False
+isPlayerWhite = True
+versusComputer = True
 
 
 def load_images(board):
@@ -44,14 +45,14 @@ def main():
 
     while running:
         for e in p.event.get():
-            if not isPlayerTurn:
+            if (isPlayerWhite and not gs.whiteToMove) or (not isPlayerWhite and gs.whiteToMove):
                 # AI Turn
                 move = ai.makeMove(gs)
                 gs.makeMove(move)
                 print(move.getChessNotation())
                 moveMade = True
                 isPlayerTurn = True
-            elif isPlayerTurn:
+            elif (isPlayerWhite and gs.whiteToMove) or (not isPlayerWhite and not gs.whiteToMove):
                 if e.type == p.QUIT:
                     running = False
                 # Mouse Handling
@@ -101,6 +102,8 @@ def main():
                 elif e.type == p.KEYDOWN:
                     if e.key == p.K_z:  # 'z' is pressed
                         gs.undoMove()
+                        if versusComputer:
+                            gs.undoMove()
                         moveMade = False
                         validMoves = gs.getValidMoves()
 
