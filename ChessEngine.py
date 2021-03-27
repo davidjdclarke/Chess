@@ -5,7 +5,16 @@ LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
 
 FILES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 ROWS = ['1', '2', '3', '4', '5', '6', '7', '8']
+SQUARES = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
+           'h': 7, '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7}
 
+def findBetween(s, first, last):
+    try:
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
+        return s[start:end]
+    except ValueError:
+        return ""
 class GameState():
     def __init__(self):
         self.board = np.zeros((8, 8))
@@ -76,7 +85,28 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
-
+            f = 1 if move.pieceMoved > 0 else (-1)
+            if abs(move.pieceMoved) == 6: 
+                if f == 1:
+                    self.whiteKingLocation = (move.startRow, move.startCol)
+                else:
+                    self.blackKingLocation = (move.startRow, move.startCol)
+            
+            if move.isCastle:
+                castles = [(0, 1), (0, 5), (7, 1), (7, 5)]
+                p = (move.endRow, move.endCol)
+                if p == (0, 1):
+                    self.board[0][2] = 0
+                    self.board[0][0] = 4 * f
+                elif p == (0, 5):
+                    self.board[0][4] = 0
+                    self.board[0][7] = 4 * f
+                elif p == (7, 1):
+                    self.board[7][2] = 0
+                    self.board[7][0] = 4 * f
+                elif p == (7, 5):
+                    self.board[7][4] = 0
+                    self.board[7][7] = 4 * f
             # undo castling rights
             self.castleRightsLog.pop() # remove the last castle rights
             # set current castle rights to old values
@@ -467,8 +497,6 @@ class GameState():
         self.whiteToMove = not self.whiteToMove
         return attacks
                             
-            
-
     def checkForPinsAndChecks(self):
         pins = []
         checks = []
@@ -545,6 +573,31 @@ class GameState():
                     checks.append((endRow, endCol, j[0], j[1]))
         return isCheck, pins, checks
 
+    def getDetailsFromPGN(self, pgn):
+        self.gameDetails = {'Event': pgn[0].strip('Event ').strip('"'),
+                            'Site': pgn[1].strip('Site ').strip('"'),
+                            'FICSGamesDBGameNo': pgn[2].strip('FICSGamesDBGameNo ').strip('"'),
+                            'White': [3].strip('White ').strip('"'),
+                            'Black': [4].strip('Black ').strip('"'),
+                            'WhiteElo': [5].strip('WhiteElo ').strip('"'),
+                            'BlackElo': [6].strip('BlackElo ').strip('"'),
+                            'ECO': [-6].strip('ECO ').strip('"'),
+                            'PlayCount': [-5].strip('PlayCount ').strip('"'),
+                            'Result': [-4].strip('Result ').strip('"'),
+                            'Ending': findBetween(match[-2], '{', '}')}
+        self.pgnMoveLog = self.getMovesFromString(pgn[-2])
+
+    def getMovesFromString(self, pgnMoves):
+        moves = pgnMoves.split('{')[0]
+        moves = moves.split(' ')
+        for i in range(len(moves)):
+            if i >= len(moves):
+                break
+            if len(moves[i]) == 0:
+                del moves[i]
+            elif moves[i][-1] == '.':
+                del moves[i]
+        return moves
 class CastleRights():
     def __init__(self, wks, bks, wqs, bqs):
         self.wks = wks
