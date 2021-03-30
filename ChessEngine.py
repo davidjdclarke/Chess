@@ -590,6 +590,7 @@ class Move():
         self.isCastle = isCastle
         self.isEnpassant = isEnpassant
         self.enpassantPossible = False
+        self.captureValue = 0
         self.enpassantSquares = []
         self.moveString = self.getChessNotation()
         if (self.pieceMoved == 1 and self.endRow == 7) or (self.pieceMoved == -1 and self.endRow == 0):
@@ -612,6 +613,9 @@ class Move():
         if isinstance(other, Move):
             return self.moveID == other.moveID
         return False
+
+    def setCapturesValue(self, newValue):
+        self.captureValue = newValue
 
     def getChessNotation(self):
         if abs(self.pieceMoved) == 1:
