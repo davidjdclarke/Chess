@@ -12,7 +12,7 @@ LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
 INVERSION = [7, 6, 5, 4, 3, 2, 1, 0]
 MAX_FPS = 60
 IMAGES = {}
-isPlayerWhite = True
+isPlayerWhite = False
 versusComputer = True
 
 
@@ -49,7 +49,7 @@ def main():
                 # AI Turn
                 move = ai.makeMove(gs)
                 gs.makeMove(move)
-                print(move.getChessNotation())
+                print(move.moveString)
                 moveMade = True
                 isPlayerTurn = True
             elif (isPlayerWhite and gs.whiteToMove) or (not isPlayerWhite and not gs.whiteToMove):
@@ -93,7 +93,7 @@ def main():
                                                     validMoves[i].setPromotionChoice('n')
                                                     choiceMade = True
                                 gs.makeMove(validMoves[i])
-                                print(move.getChessNotation())
+                                print(validMoves[i].moveString)
                                 moveMade = True
                                 isPlayerTurn = False
                             playerClicks = []

@@ -1,6 +1,7 @@
 import ChessEngine as eng
 import ChessMain as cm
 import random
+import copy
 
 
 class ComputerPlayer:
@@ -11,7 +12,14 @@ class ComputerPlayer:
 
     def makeMove(self, gs):
         self.gs = gs
-        move = self.captureMostValuablePiece()
+        self.moves = self.gs.getValidMoves()
+        allPossibleMoves = self.gs.getValidMoves()
+        captureMoves = self.findAllCaptures(allPossibleMoves)
+        move = None
+        if len(captureMoves) > 0:
+            move = self.giveBestCaptures(captureMoves)
+        if move == None:
+            move = self.pickRandomMove()
         if move.isPawnPromotion:
             self.pawnPromotion(move)
         return move
@@ -29,35 +37,102 @@ class ComputerPlayer:
             move.setPromotionChoice = 'q'
         return allPossibleMoves[index]
 
-    def captureMostValuablePiece(self):
+    def searchForPotentialAttacks(self):
+        """
+        Returns a list of sqaures that are under attack from the opponent.
+        ie. an opponent move could produce a loss of material.
+        """
+        self.gs.whiteToMove = not self.gs.whiteToMove
+
+    def giveBestCaptures(self, captures, threshold=0):
+        maxCapture = 0
+        bestCapture = None
+        for move in captures:
+            if move.captureValue > threshold:
+                maxCapture = move.captureValue
+                bestCapture = move
+        return bestCapture
+
+    def findAllCaptures(self, moves):
         """
         This function will return the move that captures the most valuable piece of the opponents.
         Depth = 1 move
         If no piece is available for capture a random move is selected
         """
-        allPossibleMoves = self.gs.getValidMoves()
+        allPossibleMoves = moves
         f = 1 if self.isWhite else (-1)
-        mostValuablePiece = 0
-        mostValuableMove = None
+        capturingMoves = []
+        searchedPositions = []
         for move in allPossibleMoves:
             if self.pieceValues[abs(move.pieceCaptured)] > 0:
-                if self.pieceValues[abs(move.pieceCaptured)] > mostValuablePiece:
-                    captureProfit = self.evaluateCapture(move)
-                    if captureProfit > 0:
-                        mostValuablePiece = self.pieceValues[abs(move.pieceCaptured)]
-                        mostValuableMove = move
-                    else:
-                        allPossibleMoves.remove(move)
-        if mostValuablePiece > 0 and mostValuableMove != None:
-            return mostValuableMove
+                position = (move.endRow, move.endCol)
+                if position not in searchedPositions:
+                    firstMove = self.evaluateCapturesExchange(position)
+                    capturingMoves.append(firstMove)
+                    searchedPositions.append(position)
+        return capturingMoves
+
+    def evaluateCapturesExchange(self, pos, scores=[0], isPlayerMove=True, depth=0):
+        """
+        
+        """
+        officialMoves = []
+        scores = [0]
+        finished = False
+        while not finished:
+            if depth > 0:
+                allPossibleMoves = self.gs.getValidMoves()
+            else:
+                allPossibleMoves = self.moves
+            moves = []
+            for move in allPossibleMoves:
+                if move.endRow == pos[0] and move.endCol == pos[1]:
+                    moves.append(move)
+            if len(moves) > 0:
+                lowest = 1000000
+                for move in moves:
+                    if abs(move.pieceMoved) < lowest:
+                        lowest = abs(move.pieceMoved)
+                        bestMove = move
+                officialMoves.append(bestMove)
+                f = 1 if isPlayerMove else (-1)
+                newScore = scores[-1] + f * self.pieceValues[abs(bestMove.pieceCaptured)]
+                scores.append(newScore)
+                self.gs.makeMove(bestMove)
+                isPlayerMove = not isPlayerMove
+                depth += 1
+            else:
+                for i in range(depth):
+                    self.gs.undoMove()
+                finished = True
+        numMoves = len(scores)
+        if numMoves <= 2:
+            finalScore = scores[-1]
         else:
-            return self.pickRandomMove(allPossibleMoves)
+            finalScore = scores[2]
+            f = 1
+            for i in range(2, numMoves):
+                if f == -1:
+                    if (scores[i] >= scores[i-2]) and (scores[i] >= scores[i-2]):
+                        finalScore = min(scores[i-1], scores[i])
+                    else:
+                        break
+                else:
+                    if (scores[i] <= scores[i-2]) and (scores[i] <= scores[i-2]):
+                        pass
+                    else:
+                        break
+                f = f * (-1)
+        firstMove = officialMoves[0]
+        firstMove.setCapturesValue(finalScore)
+        return firstMove
 
     def evaluateCapture(self, move):
         """
         Will return an integer value with the score of a capture.
         valuePieceCaptured - valueMaterialLeftVulnerable
         """
+        evalGame = copy.copy(self.gs)
         movedPieceValue = self.pieceValues[abs(move.pieceMoved)]
         capturedPieceValue = self.pieceValues[abs(move.pieceCaptured)]
         defenders = self.gs.getDefenders(move.endRow, move.endCol)

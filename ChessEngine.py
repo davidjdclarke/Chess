@@ -3,7 +3,9 @@ import numpy as np
 LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
        'wK', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bp']
 
-FILES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+PIECES = ['None', 'None', 'N', 'B', 'R', 'Q', 'K']
+
+FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 ROWS = ['1', '2', '3', '4', '5', '6', '7', '8']
 SQUARES = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
            'h': 7, '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7}
@@ -448,54 +450,23 @@ class GameState():
             self.blackKingLocation = kingSquare
         return check
 
-    def getDefenders(self, row, col):
+    def getPlayerAttacks(self, row, col):
         """
         Returns a list of all pieces with an attack on the position row, col.
         """
+        attackers = []
+        temp = self.board[row][col]
+        self.board[row][col] = -1 if self.whiteToMove else (1)
+        moves = self.getValidMoves()
         self.whiteToMove = not self.whiteToMove
-        attacks = []
-        directions = [(-1, 0), (0, -1), (1, 0), (0, 1),
-                      (-1, -1), (-1, 1), (1, -1), (1, 1)]
-        knightMoves = [(row+2, col+1), (row+2, col-1), (row-2, col+1), (row-2, col-1),
-                       (row+1, col+2), (row-1, col+2), (row+1, col-2), (row-1, col-2)]
-        f = 1 if self.whiteToMove else (-1)
-        for j in range(len(directions)):
-            d = directions[j]
-            for i in range(1, 8):
-                r = row + i * d[0]
-                c = col + i * d[1]
-                if 0 <= r < 8 and 0 <= c < 8:
-                    piece = self.board[r][c]
-                    if piece * f > 0:  # if enemy piece
-                        if j in [4, 5, 6, 7]: # diagonal move
-                            if abs(piece) in [3, 5] or (abs(piece) == 6 and i == 1):
-                                attacks.append(abs(piece))
-                                if (abs(piece)) == 6:
-                                    break
-                            elif abs(piece) in [2, 4]:
-                                break
-                            elif abs(piece) == 1:
-                                if i == 1 and d[0] == -f:
-                                    attacks.append(abs(piece))
-                                else:
-                                    break
-                        if j in [0, 1, 2, 3]:  # vertical/straight move
-                            if abs(piece) in [4, 5] or (abs(piece) == 6 and i == 1):
-                                attacks.append(abs(piece))
-                                if (abs(piece)) == 6:
-                                    break
-                            elif abs(piece) in [1, 2, 3]:
-                                break
-                else:
-                    break
-        for j in range(len(knightMoves)):
-            r = knightMoves[j][0]
-            c = knightMoves[j][1]
-            if 0 <= r < 8 and 0 <= c < 8:
-                if self.board[r][c] * f == 2:
-                    attacks.append(2)
-        self.whiteToMove = not self.whiteToMove
-        return attacks
+        self.board[row][col] = temp
+        for move in moves:
+            if move.endRow == row and move.endCol == col:
+                attackers.append(move.pieceMoved)
+        return attackers
+
+    def getOpponentAttacks(self, row, col):
+        pass
                             
     def checkForPinsAndChecks(self):
         pins = []
@@ -620,6 +591,7 @@ class Move():
         self.isEnpassant = isEnpassant
         self.enpassantPossible = False
         self.enpassantSquares = []
+        self.moveString = self.getChessNotation()
         if (self.pieceMoved == 1 and self.endRow == 7) or (self.pieceMoved == -1 and self.endRow == 0):
             self.isPawnPromotion = True
 
@@ -642,12 +614,23 @@ class Move():
         return False
 
     def getChessNotation(self):
-        pieceMovedAsStr = LUT[int(self.pieceMoved)]
-        startSquareAsString = FILES[self.startCol] + ROWS[self.startRow]
-        endSquareAsString = FILES[self.endCol] + ROWS[self.endRow]
-
-        moveString = "(" + pieceMovedAsStr + ") " + startSquareAsString + "x" + endSquareAsString
-        return str(moveString)
+        if abs(self.pieceMoved) == 1:
+            if abs(self.pieceCaptured) == 0:
+                temp = FILES[self.endCol] + ROWS[self.endRow]
+            else:
+                temp = FILES[self.startCol] + 'x' + FILES[self.endCol] + ROWS[self.endRow]
+        else:
+            if abs(self.pieceCaptured) == 0:
+                temp = PIECES[abs(self.pieceMoved)] + FILES[self.endCol] + ROWS[self.endRow]
+            else:
+                temp = PIECES[abs(self.pieceMoved)] + 'x' + FILES[self.endCol] + ROWS[self.endRow]
+        if self.isCastle:
+            if self.endCol == 1:
+                return 'O-O'
+            else:
+                return 'O-O-O'
+        return temp
+        
 
     def setPromotionChoice(self, choice):
         pieces = {'q': 5, 'r': 4, 'b': 3, 'n': 2}
