@@ -12,7 +12,7 @@ LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
 INVERSION = [7, 6, 5, 4, 3, 2, 1, 0]
 MAX_FPS = 60
 IMAGES = {}
-isPlayerWhite = False
+isPlayerWhite = True
 versusComputer = True
 
 
@@ -109,6 +109,7 @@ def main():
 
         if moveMade:
             animateMove(gs.moveLog[-1], screen, gs, clock)
+            # print_castle_rights(gs)
             validMoves = gs.getValidMoves()
             moveMade = False
             if gs.inCheck():
@@ -119,7 +120,13 @@ def main():
         drawGameState(screen, gs, validMoves, squareSelected)
         p.display.flip()
         
-
+def print_castle_rights(gs):
+    print(' wks: ' + str(gs.castleRightsLog[-1].wks))
+    print(' wqs: ' + str(gs.castleRightsLog[-1].wqs))
+    print(' bks: ' + str(gs.castleRightsLog[-1].bks))
+    print(' bqs: ' + str(gs.castleRightsLog[-1].bqs))
+    print(len(gs.castleRightsLog))
+    
 
 def invertBoardSquare(row, col):
     """

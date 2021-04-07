@@ -48,7 +48,7 @@ class GameState():
         self.checkMate = False
         self.staleMate = False
         self.currentCastlingRight = CastleRights(True, True, True, True)
-        self.castleRightsLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks, self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
+        self.castleRightsLog = [CastleRights(True, True, True, True)]
 
     def makeMove(self, move, promotion=None):
         self.board[move.startRow][move.startCol] = 0
@@ -82,6 +82,7 @@ class GameState():
 
         # update castling rights - whenever it is a rook or king move
         self.updateCastleRights(move)
+        self.castleRightsLog.append(CastleRights(wks=self.currentCastlingRight.wks, wqs=self.currentCastlingRight.wqs, bks=self.currentCastlingRight.bks, bqs=self.currentCastlingRight.bqs))
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove
 
@@ -116,8 +117,7 @@ class GameState():
             # undo castling rights
             self.castleRightsLog.pop() # remove the last castle rights
             # set current castle rights to old values
-            self.currentCastlingRight = self.castleRightsLog[-1]
-
+            self.currentCastlingRight = CastleRights(wks=self.castleRightsLog[-1].wks, wqs=self.castleRightsLog[-1].wqs, bks=self.castleRightsLog[-1].bks, bqs=self.castleRightsLog[-1].bqs)
             self.checkMate = False
 
     def updateCastleRights(self, move):
@@ -148,7 +148,6 @@ class GameState():
                 self.currentCastlingRight.bks = False
             if move.startCol == 7:
                 self.currentCastlingRight.bqs = False
-        self.castleRightsLog.append(CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks, self.currentCastlingRight.wqs, self.currentCastlingRight.bqs))
 
     def getAllMoves(self):
         moves = []
