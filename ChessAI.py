@@ -29,7 +29,7 @@ class ComputerPlayer:
             self.pawnPromotionChoice = 5 if self.isWhite else (-5)
         return move
 
-    def findBestMove(self, maxDepth=2, depth=0):
+    def findBestMove(self, maxDepth=3, depth=0):
         f = 1 if depth % 2 == 0 else (-1)
         if depth == maxDepth:
             return self.scoreMaterial()

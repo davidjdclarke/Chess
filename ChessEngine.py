@@ -80,12 +80,6 @@ class GameState():
                 self.board[move.startRow][7] = 0
                 self.board[move.startRow][move.endCol-1] = 4 * f
 
-        if self.inCheck():
-            if len(self.getValidMoves()) == 0:
-                self.checkMate = True
-                self.gameOver = True
-                self.winner = 'WHITE' if self.whiteToMove else 'BLACK'
-
         # update castling rights - whenever it is a rook or king move
         self.updateCastleRights(move)
         self.moveLog.append(move)
