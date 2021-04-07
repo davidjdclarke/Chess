@@ -44,6 +44,7 @@ class GameState():
         self.checks = []
         self.winner = None
         self.gameOver = False
+        self.isInCheck = False
         self.checkMate = False
         self.staleMate = False
         self.currentCastlingRight = CastleRights(True, True, True, True)
@@ -53,7 +54,10 @@ class GameState():
         self.board[move.startRow][move.startCol] = 0
         self.board[move.endRow][move.endCol] = move.pieceMoved
         if move.isPawnPromotion:
-            self.board[move.endRow][move.endCol] = move.promotionChoice
+            if move.promotionChoice == None:
+                self.board[move.endRow][move.endCol] = 5 if move.pieceMoved > 0 else (-5)
+            else:
+                self.board[move.endRow][move.endCol] = move.promotionChoice
         if move.pieceMoved == 6:
             self.whiteKingLocation = (move.endRow, move.endCol)
             self.whiteKingHasMoved = True
@@ -75,6 +79,12 @@ class GameState():
             else:   # Queenside Castle
                 self.board[move.startRow][7] = 0
                 self.board[move.startRow][move.endCol-1] = 4 * f
+
+        if self.inCheck():
+            if len(self.getValidMoves()) == 0:
+                self.checkMate = True
+                self.gameOver = True
+                self.winner = 'WHITE' if self.whiteToMove else 'BLACK'
 
         # update castling rights - whenever it is a rook or king move
         self.updateCastleRights(move)
@@ -113,6 +123,8 @@ class GameState():
             self.castleRightsLog.pop() # remove the last castle rights
             # set current castle rights to old values
             self.currentCastlingRight = self.castleRightsLog[-1]
+
+            self.checkMate = False
 
     def updateCastleRights(self, move):
         squares = [(0, 0), (0, 7), (7, 0), (7, 7)]
@@ -401,21 +413,6 @@ class GameState():
                 self.getKingMoves(kingRow, kingCol, moves)
         else:  # not in check
             moves = self.getAllMoves()
-        if len(moves) == 0:
-            if self.isCheck:
-                self.checkMate = True
-                self.gameOver = True
-                if self.whiteToMove:
-                    self.winner = "Black"
-                    print("Game Over: Black Wins!")
-                else:
-                    self.winner = "White"
-                    print("Game Over: White Wins!")
-            else:
-                self.staleMate = True
-                self.gameOver = True
-                self.winner = "Draw"
-                print("Game Over: Draw")
         return moves
 
     def inCheck(self):
@@ -577,7 +574,7 @@ class CastleRights():
         self.bqs = bqs
 
 class Move():
-    def __init__(self, startSquare, endSquare, board, isEnpassant=False, isCastle=False):
+    def __init__(self, startSquare, endSquare, board, isEnpassant=False, isCastle=False, isCheck=False, isCheckMate=False):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
         self.endRow = endSquare[0]
@@ -588,6 +585,9 @@ class Move():
         self.isPawnPromotion = False
         self.promotionChoice = None
         self.isCastle = isCastle
+        self.boardString = ''
+        self.isCheck =  isCheck
+        self.isCheckMate = isCheckMate
         self.isEnpassant = isEnpassant
         self.enpassantPossible = False
         self.captureValue = 0
