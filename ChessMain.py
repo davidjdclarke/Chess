@@ -111,13 +111,14 @@ def main():
             animateMove(gs.moveLog[-1], screen, gs, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
+            if gs.inCheck():
+                if len(gs.getValidMoves()) == 0:
+                    gs.gameOver = True
 
         clock.tick(MAX_FPS)
         drawGameState(screen, gs, validMoves, squareSelected)
         p.display.flip()
-        if gs.inCheck():
-            if len(gs.getValidMoves()) == 0:
-                gs.gameOver = True
+        
 
 
 def invertBoardSquare(row, col):
