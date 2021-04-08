@@ -14,6 +14,9 @@ MAX_FPS = 60
 IMAGES = {}
 isPlayerWhite = True
 versusComputer = True
+whitePlayer = 'human'
+blackPlayer = 'human'
+debug = True
 
 
 def load_images(board):
@@ -34,7 +37,10 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
-    ai = ChessAI.ComputerPlayer(gs, not isPlayerWhite)
+    if whitePlayer == 'computer':
+        whiteAI = ChessAI.ComputerPlayer(gs, True)
+    if blackPlayer == 'computer':
+        blackAI = ChessAI.ComputerPlayer(gs, False)
     validMoves = gs.getValidMoves()
     moveMade = False
 
@@ -45,14 +51,18 @@ def main():
 
     while running:
         for e in p.event.get():
-            if (isPlayerWhite and not gs.whiteToMove) or (not isPlayerWhite and gs.whiteToMove):
+            if (whitePlayer == 'computer' and gs.whiteToMove) or (blackPlayer == 'computer' and not gs.whiteToMove):
                 # AI Turn
-                move = ai.makeMove(gs)
-                gs.makeMove(move)
-                print(move.moveString)
+                if gs.whiteToMove:
+                    move = whiteAI.makeMove(gs)
+                else:
+                    move = blackAI.makeMove(gs)
+                if move != None:
+                    gs.makeMove(move)
+                    print(move.moveString)
                 moveMade = True
                 isPlayerTurn = True
-            elif (isPlayerWhite and gs.whiteToMove) or (not isPlayerWhite and not gs.whiteToMove):
+            elif (whitePlayer == 'human' and gs.whiteToMove) or (blackPlayer == 'human' and not gs.whiteToMove):
                 if e.type == p.QUIT:
                     running = False
                 # Mouse Handling
@@ -106,15 +116,17 @@ def main():
                             gs.undoMove()
                         moveMade = False
                         validMoves = gs.getValidMoves()
-
-        if moveMade:
-            animateMove(gs.moveLog[-1], screen, gs, clock)
-            # print_castle_rights(gs)
-            validMoves = gs.getValidMoves()
-            moveMade = False
-            if gs.inCheck():
-                if len(gs.getValidMoves()) == 0:
-                    gs.gameOver = True
+            if moveMade:
+                animateMove(gs.moveLog[-1], screen, gs, clock)
+                # print_castle_rights(gs)
+                validMoves = gs.getValidMoves()
+                moveMade = False
+                if gs.inCheck():
+                    if len(gs.getValidMoves()) == 0:
+                        gs.gameOver = True
+                clock.tick(MAX_FPS)
+                drawGameState(screen, gs, validMoves, squareSelected)
+                p.display.flip()
 
         clock.tick(MAX_FPS)
         drawGameState(screen, gs, validMoves, squareSelected)
@@ -224,8 +236,9 @@ def animateMove(move, screen, gs, clock):
 
 
 if __name__ == "__main__":
-    if isPlayerWhite:
-        isPlayerTurn = True
-    else:
+    if blackPlayer == 'human' and whitePlayer != 'human':
+        isPlayerWhite = False
         isPlayerTurn = False
+    else:
+        isPlayerTurn = True
     main()

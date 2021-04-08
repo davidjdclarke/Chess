@@ -60,10 +60,10 @@ class Game:
                 del moves[i]
         return moves
 
-if __name__ == "__main__":
-    with open("./games/ficsgamesdb_202101_standard2000_nomovetimes_196479.pgn") as f:
-        pgn = [line.rstrip('\n').strip(']').strip('[') for line in f]
 
+def getGames(pgn_file="./games/ficsgamesdb_202101_standard2000_nomovetimes_196479.pgn"):
+    with open(pgn_file) as f:
+        pgn = [line.rstrip('\n').strip(']').strip('[') for line in f]
     games = []
     numLines = len(pgn)
     i = 0
@@ -80,13 +80,13 @@ if __name__ == "__main__":
             i += 1
         games.append(game)
     del games[-1]
-
-    start = time.time()
     obj = []
     for i in range(len(games)):
         obj.append(Game(games[i]))
-    end = time.time()
-    print(str(end - start) + " seconds")
-    x = 0
+    return obj
+
+if __name__ == "__main__":
+    games = getGames()
+    print("Hello World!")
     
 
