@@ -1,5 +1,5 @@
 # Welcome
-This project is inspired by the YouTube video series from Eddie Sharick: 'Chess Engine in Python'.
+
 
 ## Getting Started
 ### Requirements
