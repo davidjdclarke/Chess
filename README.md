@@ -1,5 +1,5 @@
 # Welcome
-
+This project covers a chess engine implimented in Python, a graphical user interface from which the player can verse the computer or a human opponnent and a chess playing AI.
 
 ## Getting Started
 ### Requirements

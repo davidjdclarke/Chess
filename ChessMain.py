@@ -14,8 +14,8 @@ MAX_FPS = 60
 IMAGES = {}
 isPlayerWhite = True
 versusComputer = True
-whitePlayer = 'human'
-blackPlayer = 'human'
+whitePlayer = 'computer'
+blackPlayer = 'computer'
 debug = True
 
 
