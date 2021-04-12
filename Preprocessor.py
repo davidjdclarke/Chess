@@ -34,15 +34,15 @@ class Game:
         self.BlackElo = match[6].strip('BlackElo ').strip('"')
         self.WhiteIsComp = match[-12].strip('WhiteIsComp ').strip('"')
         self.TimeControl = match[-11].strip('TimeControl ').strip('"')
-        self.Date = match[-10].strip('Date ').strip('"')
-        self.Time = match[-9].strip('Time ').strip('"')
-        self.WhiteClock = match[-8].strip('WhiteClock ').strip('"')
-        self.BlackClock = match[-7].strip('BlackClock ').strip('"')
-        self.ECO = match[-6].strip('ECO ').strip('"')
-        self.PlayCount = match[-5].strip('PlayCount ').strip('"')
-        self.Result = match[-4].strip('Result ').strip('"')
-        self.Type = findBetween(match[-2], '{', '}')
-        self.Moves = self.processGame(match[-2])
+        self.Date = match[-8].strip('Date ').strip('"')
+        self.Time = match[-7].strip('Time ').strip('"')
+        self.WhiteClock = match[-6].strip('WhiteClock ').strip('"')
+        self.BlackClock = match[-5].strip('BlackClock ').strip('"')
+        self.ECO = match[-4].strip('ECO ').strip('"')
+        self.PlayCount = match[-3].strip('PlayCount ').strip('"')
+        self.Result = match[-2].strip('Result ').strip('"')
+        self.Type = findBetween(match[-1], '{', '}')
+        self.Moves = self.processGame(match[-1])
     
     def processGame(self, match):
         moves = self.getMovesFromString(match)
@@ -61,29 +61,19 @@ class Game:
         return moves
 
 
-def getGames(pgn_file="./games/ficsgamesdb_202101_standard2000_nomovetimes_196479.pgn"):
+def getGames(pgn_file="./games/ficsgamesdb_search_199458.pgn"):
+    # Open the pgn file as a string
     with open(pgn_file) as f:
         pgn = [line.rstrip('\n').strip(']').strip('[') for line in f]
     games = []
-    numLines = len(pgn)
-    i = 0
-    while i < numLines:
-        gameOver = False
-        j = 0
-        game = []
-        while not gameOver and i < numLines:
-            game.append(pgn[i])
-            if game[-1] == "":
-                j += 1
-            if j == 2:
-                gameOver = True
-            i += 1
-        games.append(game)
-    del games[-1]
-    obj = []
-    for i in range(len(games)):
-        obj.append(Game(games[i]))
-    return obj
+    for i, line in enumerate(pgn):
+        if line[0:5] == "Event":
+            games.append([line])
+        elif line == "":
+            pass
+        else:
+            games[-1].append(line)
+    return [Game(games[i]) for i in range(len(games))]
 
 if __name__ == "__main__":
     games = getGames()
