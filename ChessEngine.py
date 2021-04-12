@@ -2,9 +2,9 @@ import numpy as np
 
 LUT = [None, 'wp', 'wN', 'wB', 'wR', 'wQ', 'wK',
        'wK', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bp']
-
 PIECES = ['None', 'None', 'N', 'B', 'R', 'Q', 'K']
-
+COLUMNS = {'a': 7, 'b': 6, 'c': 5, 'd': 4, 'e': 3, 'f': 2, 'g': 1, 'h': 0}
+PROMOTIONS = {'Q': 5, 'R': 4, 'B': 3, 'N': 2}
 FILES = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']
 ROWS = ['1', '2', '3', '4', '5', '6', '7', '8']
 SQUARES = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
@@ -69,7 +69,6 @@ class GameState():
         if move.isEnpassant:
             lastMove = self.moveLog[-1]
             self.board[lastMove.endRow][lastMove.endCol] = 0
-
         # Castle Move
         if move.isCastle:
             f = 1 if self.whiteToMove else (-1)
@@ -98,7 +97,11 @@ class GameState():
                     self.whiteKingLocation = (move.startRow, move.startCol)
                 else:
                     self.blackKingLocation = (move.startRow, move.startCol)
-            
+            if move.isEnpassant:
+                if move.pieceMoved == 1:
+                    self.board[move.endRow-1][move.endCol] = -1
+                else:
+                    self.board[move.endRow+1][move.endCol] = 1
             if move.isCastle:
                 castles = [(0, 1), (0, 5), (7, 1), (7, 5)]
                 p = (move.endRow, move.endCol)
@@ -197,7 +200,7 @@ class GameState():
         # White
         if self.whiteToMove:
             if self.board[row+1][col] == 0:
-                if not piecePinned or pinDirection == (1, 0):
+                if not piecePinned or pinDirection in ((1, 0), (-1, 0)):
                     moves.append(Move((row, col), (row+1, col), self.board))
                     if row == 1:
                         if self.board[row+2][col] == 0:
@@ -220,7 +223,7 @@ class GameState():
         # Black
         elif not self.whiteToMove:
             if self.board[row-1][col] == 0:
-                if not piecePinned or pinDirection == (-1, 0):
+                if not piecePinned or pinDirection in ((1, 0), (-1, 0)):
                     moves.append(Move((row, col), (row-1, col), self.board))
                     if row == 6:
                         if self.board[row-2][col] == 0:
@@ -296,12 +299,12 @@ class GameState():
         for i in range(len(self.pins)-1, -1, -1):
             if self.pins[i][0] == row and self.pins[i][1] == col:
                 piecePinned = True
-                pinDirection = (self.pins[i][2], self.pins[i][3])
+                pinDirection = ((self.pins[i][2], self.pins[i][3]), (-self.pins[i][2], -self.pins[i][3]))
                 self.pins.remove(self.pins[i])
         f = 1 if self.whiteToMove else (-1)
 
         for d in directions:
-            if not piecePinned or pinDirection == d:
+            if not piecePinned or d in pinDirection:
                 for i in range(1, 8):
                     newRow = row + i * d[0]
                     newCol = col + i * d[1]
@@ -380,7 +383,8 @@ class GameState():
             kingRow = self.blackKingLocation[0]
             kingCol = self.blackKingLocation[1]
         if self.isCheck:
-            if len(self.checks) == 1:  # only 1 check, block the check or move the king
+            sameDirection = all(self.checks[0][2:] == self.checks[i][2:] for i in range(len(self.checks)))
+            if len(self.checks) == 1 or sameDirection:  # only 1 check, block the check or move the king
                 moves = self.getAllMoves()
                 check = self.checks[0] # Check information
                 checkRow = check[0]
@@ -398,10 +402,21 @@ class GameState():
                             break
                 # Remove all moves that don't block the check, or move the King
                 for i in range(len(moves) - 1, -1, -1):
-                    if moves[i].pieceMoved != abs(6): # Must block or capture
+                    if moves[i].isEnpassant:
+                        self.makeMove(moves[i])
+                        self.whiteToMove = not self.whiteToMove
+                        temp = self.checkForPinsAndChecks()
+                        if not temp[0]:
+                            pass
+                        else:
+                            moves.remove(moves[i])
+                        self.whiteToMove = not self.whiteToMove
+                        self.undoMove()
+                    elif moves[i].pieceMoved != abs(6): # Must block or capture
                         if not (moves[i].endRow, moves[i].endCol) in validSquares:
                             if abs(moves[i].pieceMoved) != 6: # King can still move out of check!
                                 moves.remove(moves[i])
+                        
             else:  # Double check, must move the king
                 self.getKingMoves(kingRow, kingCol, moves)
         else:  # not in check
@@ -494,17 +509,18 @@ class GameState():
                         2.  Bishop
                         3.  Rook
                         4.  Queen
+                        5.  King
                         """
                         #  Pawn
                         if abs(endPiece) == 1 and i == 1:
-                            if f == -1:  # Black to move
-                                if j in [4, 5]:
-                                    isCheck = True
-                                    checks.append((endRow, endCol, d[0], d[1]))
+                            if f == -1 and j in [4, 5]:  # Black to move
+                                isCheck = True
+                                checks.append((endRow, endCol, d[0], d[1]))
+                            elif j in [6, 7] and f == 1:  # White to move
+                                isCheck = True
+                                checks.append((endRow, endCol, d[0], d[1]))
                             else:
-                                if j in [6, 7]:  # White to move
-                                    isCheck = True
-                                    checks.append((endRow, endCol, d[0], d[1]))
+                                break
                         #  Bishop and Queen (pt. 1)
                         elif abs(endPiece) in [3, 5] and j in [4, 5, 6, 7]:
                             if posiblePin == ():
@@ -519,6 +535,9 @@ class GameState():
                                 checks.append((endRow, endCol, d[0], d[1]))
                             else:
                                 pins.append(posiblePin)
+                        elif abs(endPiece) == 6 and i == 1:
+                            isCheck = True
+                            checks.append((endRow, endCol, d[0], d[1]))
                         else:
                             break
                 else:
@@ -548,17 +567,50 @@ class GameState():
                             'Ending': findBetween(match[-2], '{', '}')}
         self.pgnMoveLog = self.getMovesFromString(pgn[-2])
 
-    def getMovesFromString(self, pgnMoves):
-        moves = pgnMoves.split('{')[0]
-        moves = moves.split(' ')
-        for i in range(len(moves)):
-            if i >= len(moves):
+    def getMoveFromString(self, move):
+        # Strip Check & CheckMate Decorators
+        if '+' in move:
+            move = move.strip('+')
+        elif '#' in move:
+            move = move.strip('#')
+
+        # Get possible moves from getValidMoves
+        possible_moves = self.getValidMoves()
+        selected_move = None
+
+        # Look for matching Move
+        for i in range(len(possible_moves)):
+            if move == possible_moves[i].moveString:
+                selected_move = possible_moves[i]
                 break
-            if len(moves[i]) == 0:
-                del moves[i]
-            elif moves[i][-1] == '.':
-                del moves[i]
-        return moves
+        if selected_move == None and move != '':
+            if move[0] in ['N', 'B', 'R', 'Q']:
+                new_move = move[0] + move[2:]
+                if move[1].isnumeric():
+                    row = int(move[1]) - 1
+                    for i in range(len(possible_moves)):
+                        if new_move == possible_moves[i].moveString and possible_moves[i].startRow == row:
+                            selected_move = possible_moves[i]
+                            break
+                elif move[1] in ['a', 'b', 'c', 'd', 'e', 'g', 'f', 'h']:
+                    col = COLUMNS[move[1]]
+                    for i in range(len(possible_moves)):
+                        if new_move == possible_moves[i].moveString and possible_moves[i].startCol == col:
+                            selected_move = possible_moves[i]
+                            break
+            if '=' in move:
+                choice = move[-1]
+                move = move[0:-2]
+                for i in range(len(possible_moves)):
+                    if move == possible_moves[i].moveString and possible_moves[i].isPawnPromotion:
+                        f = 1 if self.whiteToMove else (-1)
+                        possible_moves[i].promotionChoice = PROMOTIONS[choice] * f 
+                        selected_move = possible_moves[i]
+
+        # Return Move that macthes input parameters
+        return selected_move
+        
+        
 class CastleRights():
     def __init__(self, wks, bks, wqs, bqs):
         self.wks = wks
@@ -612,7 +664,7 @@ class Move():
 
     def getChessNotation(self):
         if abs(self.pieceMoved) == 1:
-            if abs(self.pieceCaptured) == 0:
+            if abs(self.pieceCaptured) == 0 and not self.isEnpassant:
                 temp = FILES[self.endCol] + ROWS[self.endRow]
             else:
                 temp = FILES[self.startCol] + 'x' + FILES[self.endCol] + ROWS[self.endRow]
