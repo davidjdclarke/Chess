@@ -14,8 +14,8 @@ MAX_FPS = 60
 IMAGES = {}
 isPlayerWhite = True
 versusComputer = True
-whitePlayer = 'computer'
-blackPlayer = 'computer'
+whitePlayer = 'human'
+blackPlayer = 'human'
 debug = True
 
 
@@ -241,4 +241,8 @@ if __name__ == "__main__":
         isPlayerTurn = False
     else:
         isPlayerTurn = True
+    if whitePlayer == 'computer' or blackPlayer == 'computer':
+        versusComputer = True
+    else:
+        versusComputer = False
     main()
