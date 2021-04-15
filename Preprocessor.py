@@ -75,8 +75,29 @@ def getGames(pgn_file="./games/ficsgamesdb_search_199458.pgn"):
             games[-1].append(line)
     return [Game(games[i]) for i in range(len(games))]
 
+def createGameLabel(game):
+    pass
+
+def get_possible_endings(games):
+    endings = []
+    for i, game in enumerate(games):
+        ending = game.Type
+        if ending not in endings:
+            endings.append(ending)
+    return endings
+
+def get_first_words(string_array):
+    first_words = []
+    for i, words in enumerate(string_array):
+        first_word = words.split(" ")[0]
+        if first_word not in first_words:
+            first_words.append(first_word)
+    return first_words
+
 if __name__ == "__main__":
     games = getGames()
+    endings = get_possible_endings(games)
+    first_word = get_first_words(endings)
     print("Hello World!")
     
 
