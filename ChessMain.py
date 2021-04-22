@@ -74,7 +74,7 @@ def main():
                         r, c = invertBoardSquare(row, col)
                     else:
                         r, c = row, col
-                    if squareSelected == (row, col):  # clicked the same square twice
+                    if squareSelected == (r, c):  # clicked the same square twice
                         squareSelected = ()
                         playerClicks = []
                     else:

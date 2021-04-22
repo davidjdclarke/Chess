@@ -7,7 +7,7 @@ COLUMNS = {'a': 7, 'b': 6, 'c': 5, 'd': 4, 'e': 3, 'f': 2, 'g': 1, 'h': 0}
 PROMOTIONS = {'Q': 5, 'R': 4, 'B': 3, 'N': 2}
 
 def testEngine():
-    pgn_file = "./games/ficsgamesdb_202101_standard2000_nomovetimes_196479.pgn"
+    pgn_file = "./games/ficsgamesdb_2020_CvC_nomovetimes_199470.pgn"
     games = Preprocessor.getGames(pgn_file=pgn_file)
     total_fail = 0
     for num, game in enumerate(games):
@@ -83,7 +83,6 @@ def one_hot_board(board, white_perspective=True):
             piece = board[i][j]
             data = np.append(data, LUT[piece])
     return data
-    
 
 if __name__ == "__main__":
     '''x = findGameStates()
