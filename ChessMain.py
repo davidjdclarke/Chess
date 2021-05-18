@@ -15,35 +15,44 @@ IMAGES = {}
 isPlayerWhite = True
 versusComputer = True
 whitePlayer = 'human'
-blackPlayer = 'human'
+blackPlayer = 'computer'
 debug = True
 
 
 def load_images(board):
+    # Load the pieces images from memory
     pieces = board.LUT
     del pieces['--']
-
     for piece in pieces.keys():
         IMAGES[piece] = p.image.load("images/" + str(piece) + ".png")
 
 
 def main():
+    # Sets initial state of isPlayerTurn
     if isPlayerWhite:
         isPlayerTurn = True
     else:
         isPlayerTurn = False
 
+    # initialize the screen and clock
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
+
+    # initialize the gamestate object
     gs = ChessEngine.GameState()
+
+    # initialize the AI IF the computer is one of the players
     if whitePlayer == 'computer':
-        whiteAI = ChessAI.ComputerPlayer(gs, True)
+        whiteAI = ChessAI.ComputerPlayer(gs, isWhite=True)
     if blackPlayer == 'computer':
-        blackAI = ChessAI.ComputerPlayer(gs, False)
+        blackAI = ChessAI.ComputerPlayer(gs, isWhite=False)
+
+    # Get starting moves, and set moveMade to false
     validMoves = gs.getValidMoves()
     moveMade = False
 
+    # Set the board from gs
     load_images(gs)
     running = True
     squareSelected = ()
