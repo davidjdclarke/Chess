@@ -1,6 +1,7 @@
 import pygame as p
 import ChessEngine
 import ChessAI
+import ChessNet
 
 
 p.init()
@@ -14,8 +15,8 @@ MAX_FPS = 60
 IMAGES = {}
 isPlayerWhite = True
 versusComputer = True
-whitePlayer = 'human'
-blackPlayer = 'computer'
+whitePlayer = 'chessnet'
+blackPlayer = 'human'
 debug = True
 
 
@@ -47,6 +48,8 @@ def main():
         whiteAI = ChessAI.ComputerPlayer(gs, isWhite=True)
     if blackPlayer == 'computer':
         blackAI = ChessAI.ComputerPlayer(gs, isWhite=False)
+    if whitePlayer == 'chessnet':
+        chess_net = ChessNet.ChessNet()
 
     # Get starting moves, and set moveMade to false
     validMoves = gs.getValidMoves()
@@ -60,10 +63,10 @@ def main():
 
     while running:
         for e in p.event.get():
-            if (whitePlayer == 'computer' and gs.whiteToMove) or (blackPlayer == 'computer' and not gs.whiteToMove):
+            if (whitePlayer == 'computer' and gs.whiteToMove) or (blackPlayer == 'computer' and not gs.whiteToMove) or (whitePlayer == 'chessnet' and gs.whiteToMove):
                 # AI Turn
                 if gs.whiteToMove:
-                    move = whiteAI.makeMove(gs)
+                    move = chess_net.select_move(gs)
                 else:
                     move = blackAI.makeMove(gs)
                 if move != None:
