@@ -11,6 +11,16 @@ SQUARES = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
            'h': 7, '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7}
 
 def findBetween(s, first, last):
+    """
+    ???
+
+    Args:
+        s -- ?
+        first -- ?
+        last -- ?
+    Returns:
+        None
+    """
     try:
         start = s.index(first) + len(first)
         end = s.index(last, start)
@@ -18,11 +28,27 @@ def findBetween(s, first, last):
     except ValueError:
         return ""
 class GameState():
+    """
+    Game State Class
+
+    The games state holds ALL of the information about the current state of the game.  This includes the
+    position of all the pieces, the castling rights and a list of moves that have been played leading up
+    to the current state.
+    """
     def __init__(self):
+        """
+        Initialize Game State
+        """
         self.board = np.zeros((8, 8))
         self.reset()
 
     def reset(self):
+        """
+        Reset the Game State
+
+        - Set the location of all the pieces
+        - Set all flags to the appropriate states
+        """
         self.board = np.zeros((8, 8), dtype='int8')
         self.board[0] = [4, 2, 3, 6, 5, 3, 2, 4]
         self.board[1] = [1, 1, 1, 1, 1, 1, 1, 1]
@@ -49,6 +75,21 @@ class GameState():
         self.staleMate = False
         self.currentCastlingRight = CastleRights(True, True, True, True)
         self.castleRightsLog = [CastleRights(True, True, True, True)]
+
+    def getMovesAsStrings(self, moves=None):
+        """
+        Get Moves as Simple Strings
+
+        Return a move as a string of the start square and end square (ie. 'a1a2')
+
+        Args:
+            moves -- List of Moves
+        Returns:
+
+        """
+        if moves is None:
+            moves = self.getValidMoves()
+        return [move.getMoveString() for move in moves]
 
     def makeMove(self, move, promotion=None):
         self.board[move.startRow][move.startCol] = 0
@@ -653,11 +694,16 @@ class Move():
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
         self.message = None
 
-
     def __eq__(self, other):
         if isinstance(other, Move):
             return self.moveID == other.moveID
         return False
+
+    def getMoveString(self):
+        FILES.reverse()
+        temp = FILES[self.startCol] + str(self.startRow) + FILES[self.endCol] + str(self.endRow)
+        FILES.reverse()
+        return temp
 
     def setCapturesValue(self, newValue):
         self.captureValue = newValue
