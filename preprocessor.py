@@ -6,7 +6,7 @@ It should also have tools built in to save attributes of games and then filter t
 import chess.pgn
 from pgn_parser import pgn, parser
 import io
-import ChessEngine as ce
+import engine as ce
 import time
 
 SQUARES = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,

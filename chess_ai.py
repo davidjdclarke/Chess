@@ -1,5 +1,5 @@
-import ChessEngine as eng
-import ChessMain as cm
+import engine as eng
+import main as cm
 import random
 import copy
 import numpy as np

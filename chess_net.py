@@ -1,8 +1,8 @@
 import numpy as np
-import ChessEngine
+import engine
 import tensorflow as tf
 import chessnet
-import Preprocessor
+import preprocessor
 from matplotlib import pyplot as plt
 import timeit
 
@@ -280,14 +280,14 @@ class ChessNet:
         MAX_GAMES_PER_SET = 20
 
         for file in pgn_files:
-            games = Preprocessor.getGames(file)
+            games = preprocessor.getGames(file)
             x_train = np.zeros((len(moves), 16, 16, 1))
             y_train = np.zeros((len(moves), 64, 64))
 
             for i in range(MAX_GAMES_PER_SET):
 
         for num, game in enumerate(games):
-            gs = ChessEngine.GameState()
+            gs = engine.GameState()
             moves = game.Moves
             x_train = np.zeros((len(moves), 16, 16, 1))
             y_train = np.zeros((len(moves), 64, 64))
@@ -338,10 +338,10 @@ def train():
                   loss=tf.keras.losses.MeanSquaredError(),
                   metrics=['accuracy'])
 
-    games = Preprocessor.getGames()
+    games = preprocessor.getGames()
 
     for num, game in enumerate(games):
-        gs = ChessEngine.GameState()
+        gs = engine.GameState()
         moves = game.Moves
         x_train = np.zeros((len(moves), 16, 16, 1))
         y_train = np.zeros((len(moves), 64, 64))
@@ -379,7 +379,7 @@ def train():
 
 
 def infitite_play():
-    gs = ChessEngine.GameState()
+    gs = engine.GameState()
     gp = ChessNet()
     model = chessnet.chessnet()
 

@@ -1,4 +1,4 @@
-/chess-venv
-/images
-launch.json
-./.vscode
+./venv
+./images
+./vscode
+./games

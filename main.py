@@ -1,7 +1,7 @@
 import pygame as p
-import ChessEngine
-import ChessAI
-import ChessNet
+import engine
+import chess_ai
+import chess_net
 
 
 p.init()
@@ -41,15 +41,15 @@ def main():
     screen.fill(p.Color("white"))
 
     # initialize the gamestate object
-    gs = ChessEngine.GameState()
+    gs = engine.GameState()
 
     # initialize the AI IF the computer is one of the players
     if whitePlayer == 'computer':
-        whiteAI = ChessAI.ComputerPlayer(gs, isWhite=True)
+        whiteAI = chess_ai.ComputerPlayer(gs, isWhite=True)
     if blackPlayer == 'computer':
-        blackAI = ChessAI.ComputerPlayer(gs, isWhite=False)
+        blackAI = chess_ai.ComputerPlayer(gs, isWhite=False)
     if whitePlayer == 'chessnet':
-        chess_net = ChessNet.ChessNet()
+        chess_net = chess_net.ChessNet()
 
     # Get starting moves, and set moveMade to false
     validMoves = gs.getValidMoves()
@@ -93,7 +93,7 @@ def main():
                         squareSelected = (r, c)
                         playerClicks.append(squareSelected)
                     if len(playerClicks) == 2:
-                        move = ChessEngine.Move(
+                        move = engine.Move(
                             playerClicks[0], playerClicks[1], gs.board)
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
